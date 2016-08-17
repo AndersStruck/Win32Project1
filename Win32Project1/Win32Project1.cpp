@@ -17,21 +17,42 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+#define SCREEN_WIDTH 3840
+#define SCREEN_HEIGHT 2160
+
 void MouseSetup(INPUT *buffer) {
 	buffer->type = INPUT_MOUSE;
-	buffer->mi.dx = (0);
-	buffer->mi.dy = (0);
+	buffer->mi.dx = (0 * (0xFFFF / SCREEN_WIDTH));
+	buffer->mi.dy = (0 * (0xFFFF / SCREEN_HEIGHT));
 	buffer->mi.mouseData = 0;
 	buffer->mi.dwFlags = MOUSEEVENTF_ABSOLUTE;
 	buffer->mi.time = 0;
 	buffer->mi.dwExtraInfo = 0;
 }
-void MouseMoveAbsolute(INPUT *buffer, int x, int y) {
-	buffer->mi.dx = ( x );
-	buffer->mi.dy = ( y );
-	buffer->mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE);
 
+void MouseMoveAbsolute(INPUT *buffer, int x, int y) {
+	buffer->mi.dx = (x * (0xFFFF / SCREEN_WIDTH));
+	buffer->mi.dy = (y * (0xFFFF / SCREEN_HEIGHT));
+	buffer->mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE);
 	SendInput(1, buffer, sizeof(INPUT));
+}
+
+void MouseClick(INPUT *buffer) {
+	buffer->mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN);
+	SendInput(1, buffer, sizeof(INPUT));
+	Sleep(10);
+	buffer->mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP);
+	SendInput(1, buffer, sizeof(INPUT));
+}
+
+void autoClick(INPUT *buffer) {
+	int Count = 2;
+	int Delay = 1000;
+	int i;
+	for (i = 0; i < Count; i++) {
+		MouseMoveAbsolute(buffer, 500, 500);
+		Sleep(Delay);
+	}
 }
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -43,12 +64,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: Place code here.
-	INPUT buffer;
+	//INPUT buffer;
 	int i = 0;
-	
-	MouseSetup( &buffer );
+	LPPOINT MousePos;
+//	GetCursorPos(MousePos);
+	char str[128];
+	printf_s(str);
+	OutputDebugStringA("Konsol Test");
+	OutputDebugStringA();
+	//MouseSetup( &buffer );
 	//for (i = 0; i < 100; i++) {
-		MouseMoveAbsolute(&buffer, 10, 10);
+	//	MouseMoveAbsolute(&buffer, 10, 10);
 	//	Sleep(100);
 	//}
 	
@@ -69,8 +95,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MSG msg;
 
     // Main message loop:
-    while (GetMessage(&msg, nullptr, 0, 0))
-    {
+    while (GetMessage(&msg, nullptr, 0, 0)){
         if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
         {
             TranslateMessage(&msg);
@@ -147,16 +172,18 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
-	static HWND hWnd_TEXT;
+	static HWND hWnd_TEXT, hWnd_Count, hWnd_Delay;
+	static INPUT buffer;
+	MouseSetup(&buffer);
     switch (message){
 	case WM_CREATE:
-		CreateWindow(TEXT("EDIT"), TEXT("edit"),
+		hWnd_Count = CreateWindow(TEXT("EDIT"), TEXT("Count"),
 					 WS_VISIBLE | WS_CHILD | WS_BORDER,
 					 20, 160,
 					 50, 30,
 					 hWnd, (HMENU)20,
 					 NULL, NULL);
-		CreateWindow(TEXT("EDIT"), TEXT("edit"),
+		hWnd_Delay = CreateWindow(TEXT("EDIT"), TEXT("Delay"),
 					 WS_VISIBLE | WS_CHILD | WS_BORDER,
 					 95, 160,
 					 50, 30,
@@ -187,8 +214,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
             // Parse the menu selections:
             switch (wmId){
 				case 23:
-					SetWindowText(hWnd_TEXT ,TEXT("Text nu!"));
-					break;
+				{
+					autoClick(&buffer);
+					int len = GetWindowTextLength(hWnd_Count) + 1;
+				//	static char Count[10];
+					LONG_PTR Count = 0;
+				//	GetWindowTextA(hWnd_Count, Count, len);
+					Count = GetWindowLong(hWnd_Count, GWL_USERDATA);
+					SetWindowText(hWnd_TEXT, TEXT("Button"));
+				//	SetWindowTextA(hWnd_Delay , Count);
+				//	SetWindowLong(hWnd_Delay, GWL_USERDATA, Count);
+					SetWindowLongPtr(hWnd_Delay, GWL_USERDATA, (LONG_PTR) 10 );
+					break; 
+				}
 				case IDM_ABOUT:
 					DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 					break;
