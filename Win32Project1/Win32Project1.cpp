@@ -17,6 +17,23 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+void MouseSetup(INPUT *buffer) {
+	buffer->type = INPUT_MOUSE;
+	buffer->mi.dx = (0);
+	buffer->mi.dy = (0);
+	buffer->mi.mouseData = 0;
+	buffer->mi.dwFlags = MOUSEEVENTF_ABSOLUTE;
+	buffer->mi.time = 0;
+	buffer->mi.dwExtraInfo = 0;
+}
+void MouseMoveAbsolute(INPUT *buffer, int x, int y) {
+	buffer->mi.dx = ( x );
+	buffer->mi.dy = ( y );
+	buffer->mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE);
+
+	SendInput(1, buffer, sizeof(INPUT));
+}
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -26,6 +43,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: Place code here.
+	INPUT buffer;
+	int i = 0;
+	
+	MouseSetup( &buffer );
+	//for (i = 0; i < 100; i++) {
+		MouseMoveAbsolute(&buffer, 10, 10);
+	//	Sleep(100);
+	//}
+	
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -98,16 +124,15 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hInst = hInstance; // Store instance handle in our global variable
 
    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-
-   if (!hWnd)
-   {
+      CW_USEDEFAULT, 0, 500, 500, nullptr, nullptr, hInstance, nullptr);
+   
+   if (!hWnd){
       return FALSE;
    }
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
-
+  
    return TRUE;
 }
 
@@ -121,24 +146,57 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_DESTROY  - post a quit message and return
 //
 //
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message)
-    {
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
+	static HWND hWnd_TEXT;
+    switch (message){
+	case WM_CREATE:
+		CreateWindow(TEXT("EDIT"), TEXT("edit"),
+					 WS_VISIBLE | WS_CHILD | WS_BORDER,
+					 20, 160,
+					 50, 30,
+					 hWnd, (HMENU)20,
+					 NULL, NULL);
+		CreateWindow(TEXT("EDIT"), TEXT("edit"),
+					 WS_VISIBLE | WS_CHILD | WS_BORDER,
+					 95, 160,
+					 50, 30,
+					 hWnd, (HMENU)21,
+					 NULL, NULL);
+		CreateWindow(TEXT("EDIT"), TEXT("edit"),
+					 WS_VISIBLE | WS_CHILD | WS_BORDER,
+					 170, 160,
+					 50, 30,
+					 hWnd, (HMENU)22,
+					 NULL, NULL);
+		CreateWindow(TEXT("Button"), TEXT("Click"),
+					 WS_VISIBLE | WS_CHILD,
+					 20, 200,
+					 200, 40,
+					 hWnd, (HMENU)23,
+					 NULL, NULL);
+		hWnd_TEXT = CreateWindow(TEXT("STATIC"), TEXT("Tjek !"),
+					 WS_VISIBLE | WS_CHILD | WS_BORDER,
+					 20, 20,
+					 200, 100,
+					 hWnd, (HMENU)24,
+					 NULL, NULL);
+		break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
             // Parse the menu selections:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
+            switch (wmId){
+				case 23:
+					SetWindowText(hWnd_TEXT ,TEXT("Text nu!"));
+					break;
+				case IDM_ABOUT:
+					DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+					break;
+				case IDM_EXIT:
+					DestroyWindow(hWnd);
+					break;
+				default:
+					return DefWindowProc(hWnd, message, wParam, lParam);
             }
         }
         break;
@@ -160,11 +218,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 // Message handler for about box.
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
+INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam){
     UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
+	
+    switch (message){
     case WM_INITDIALOG:
         return (INT_PTR)TRUE;
 
