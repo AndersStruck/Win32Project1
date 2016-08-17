@@ -51,7 +51,7 @@ void autoClick(INPUT *buffer) {
 	int i;
 	for (i = 0; i < Count; i++) {
 		MouseMoveAbsolute(buffer, 500, 500);
-		Sleep(Delay);
+	//	Sleep(Delay);
 	}
 }
 
@@ -69,9 +69,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	LPPOINT MousePos;
 //	GetCursorPos(MousePos);
 	char str[128];
-	printf_s(str);
-	OutputDebugStringA("Konsol Test");
-	OutputDebugStringA();
+	//sprintf_s(str);
+	OutputDebugStringA("Konsol Test\n");
+	
 	//MouseSetup( &buffer );
 	//for (i = 0; i < 100; i++) {
 	//	MouseMoveAbsolute(&buffer, 10, 10);
@@ -177,20 +177,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 	MouseSetup(&buffer);
     switch (message){
 	case WM_CREATE:
-		hWnd_Count = CreateWindow(TEXT("EDIT"), TEXT("Count"),
-					 WS_VISIBLE | WS_CHILD | WS_BORDER,
+		hWnd_Count = CreateWindow(TEXT("EDIT"), TEXT("7"),
+					 WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER,
 					 20, 160,
 					 50, 30,
 					 hWnd, (HMENU)20,
 					 NULL, NULL);
 		hWnd_Delay = CreateWindow(TEXT("EDIT"), TEXT("Delay"),
-					 WS_VISIBLE | WS_CHILD | WS_BORDER,
+					 WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER,
 					 95, 160,
 					 50, 30,
 					 hWnd, (HMENU)21,
 					 NULL, NULL);
 		CreateWindow(TEXT("EDIT"), TEXT("edit"),
-					 WS_VISIBLE | WS_CHILD | WS_BORDER,
+					 WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER,
 					 170, 160,
 					 50, 30,
 					 hWnd, (HMENU)22,
@@ -217,6 +217,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 				{
 					autoClick(&buffer);
 					int len = GetWindowTextLength(hWnd_Count) + 1;
+					INT k;
+					char str[256];
+					BOOL b;
+					k = GetDlgItemInt(hWnd, 20, &b, FALSE);
+					sprintf_s(str, "Read Value: %d ; Sucess: %d\n", k, b);
+					OutputDebugStringA( str );
 				//	static char Count[10];
 					LONG_PTR Count = 0;
 				//	GetWindowTextA(hWnd_Count, Count, len);
@@ -224,7 +230,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 					SetWindowText(hWnd_TEXT, TEXT("Button"));
 				//	SetWindowTextA(hWnd_Delay , Count);
 				//	SetWindowLong(hWnd_Delay, GWL_USERDATA, Count);
-					SetWindowLongPtr(hWnd_Delay, GWL_USERDATA, (LONG_PTR) 10 );
+					SetWindowLongPtr(hWnd_Count, GWL_USERDATA, (LONG_PTR) 10 );
 					break; 
 				}
 				case IDM_ABOUT:
