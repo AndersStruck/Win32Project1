@@ -22,8 +22,8 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 void MouseSetup(INPUT *buffer) {
 	buffer->type = INPUT_MOUSE;
-	buffer->mi.dx = (0 * (0xFFFF / SCREEN_WIDTH));
-	buffer->mi.dy = (0 * (0xFFFF / SCREEN_HEIGHT));
+	buffer->mi.dx = (0 * (0xFFFF / GetSystemMetrics(SM_CXSCREEN) ));
+	buffer->mi.dy = (0 * (0xFFFF / GetSystemMetrics(SM_CYSCREEN) ));
 	buffer->mi.mouseData = 0;
 	buffer->mi.dwFlags = MOUSEEVENTF_ABSOLUTE;
 	buffer->mi.time = 0;
@@ -31,8 +31,8 @@ void MouseSetup(INPUT *buffer) {
 }
 
 void MouseMoveAbsolute(INPUT *buffer, int x, int y) {
-	buffer->mi.dx = (x * (0xFFFF / SCREEN_WIDTH));
-	buffer->mi.dy = (y * (0xFFFF / SCREEN_HEIGHT));
+	buffer->mi.dx = (x * (0xFFFF / GetSystemMetrics(SM_CXSCREEN) ));
+	buffer->mi.dy = (y * (0xFFFF / GetSystemMetrics(SM_CYSCREEN) ));
 	buffer->mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE);
 	SendInput(1, buffer, sizeof(INPUT));
 }
@@ -45,13 +45,15 @@ void MouseClick(INPUT *buffer) {
 	SendInput(1, buffer, sizeof(INPUT));
 }
 
-void autoClick(INPUT *buffer) {
-	int Count = 2;
-	int Delay = 1000;
+void autoClick(INPUT *buffer, int x, int y, int count, int delay) {
+//	int Count = 2;
+//	int Delay = 1000;
 	int i;
-	for (i = 0; i < Count; i++) {
-		MouseMoveAbsolute(buffer, 500, 500);
-	//	Sleep(Delay);
+	for (i = 0; i < count; i++) {
+		MouseMoveAbsolute(buffer, x, y);
+		Sleep(1);
+		MouseClick(buffer);
+		Sleep(delay);
 	}
 }
 
@@ -174,50 +176,93 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 	static HWND hWnd_TEXT, hWnd_Count, hWnd_Delay;
 	static INPUT buffer;
 	MouseSetup(&buffer);
-/*	POINT Mouse;
-	GetCursorPos(&Mouse);
-	ClientToScreen(hWnd, &Mouse);
-	SetDlgItemInt(hWnd, 21, Mouse.x, TRUE);
-	SetDlgItemInt(hWnd, 22, Mouse.y, TRUE);*/
     switch (message){
 	case WM_CREATE:
-		hWnd_Count = CreateWindow(TEXT("EDIT"), TEXT("7"),
+		hWnd_Count = CreateWindow(TEXT("EDIT"), TEXT("378"),	// set Count
 					 WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER,
 					 20, 160,
 					 50, 30,
 					 hWnd, (HMENU)20,
 					 NULL, NULL);
-		hWnd_Delay = CreateWindow(TEXT("EDIT"), TEXT("Delay"),
+		hWnd_Delay = CreateWindow(TEXT("EDIT"), TEXT("3000"),	// Set Delay
 					 WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER,
 					 95, 160,
 					 50, 30,
 					 hWnd, (HMENU)21,
 					 NULL, NULL);
-		CreateWindow(TEXT("EDIT"), TEXT("edit"),
+		CreateWindow(TEXT("EDIT"), TEXT("0"),
 					 WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER,
 					 170, 160,
 					 50, 30,
+					 hWnd, (HMENU)22,
+					 NULL, NULL);
+		CreateWindow(TEXT("EDIT"), TEXT(""), // current x 
+					 WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER,
+					 250, 50,
+					 50, 30,
+					 hWnd, (HMENU)23,
+					 NULL, NULL);
+		CreateWindow(TEXT("EDIT"), TEXT(""), // current y
+					 WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER,
+					 250, 100,
+					 50, 30,
+					 hWnd, (HMENU)24,
+					 NULL, NULL);
+		CreateWindow(TEXT("STATIC"), TEXT("X:"),
+					 WS_VISIBLE | WS_CHILD | WS_BORDER ,
+					 225, 50,
+					 25, 30,
+					 hWnd, (HMENU)22,
+					 NULL, NULL);
+		CreateWindow(TEXT("STATIC"), TEXT("Y:"),
+					 WS_VISIBLE | WS_CHILD | WS_BORDER,
+					 225, 100,
+					 25, 30,
+					 hWnd, (HMENU)22,
+					 NULL, NULL);
+		CreateWindow(TEXT("EDIT"), TEXT("500"),// Click x
+					 WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER,
+					 250, 200,
+					 50, 30,
+					 hWnd, (HMENU)25,
+					 NULL, NULL);
+		CreateWindow(TEXT("EDIT"), TEXT("350"), // click y
+					 WS_VISIBLE | WS_CHILD | WS_BORDER | ES_NUMBER,
+					 250, 250,
+					 50, 30,
+					 hWnd, (HMENU)26,
+					 NULL, NULL);
+		CreateWindow(TEXT("STATIC"), TEXT("X:"),
+					 WS_VISIBLE | WS_CHILD | WS_BORDER,
+					 225, 200,
+					 25, 30,
+					 hWnd, (HMENU)22,
+					 NULL, NULL);
+		CreateWindow(TEXT("STATIC"), TEXT("Y:"),
+					 WS_VISIBLE | WS_CHILD | WS_BORDER,
+					 225, 250,
+					 25, 30,
 					 hWnd, (HMENU)22,
 					 NULL, NULL);
 		CreateWindow(TEXT("Button"), TEXT("Click"),
 					 WS_VISIBLE | WS_CHILD,
 					 20, 200,
 					 200, 40,
-					 hWnd, (HMENU)23,
+					 hWnd, (HMENU)10,
 					 NULL, NULL);
 		hWnd_TEXT = CreateWindow(TEXT("STATIC"), TEXT("Tjek !"),
 					 WS_VISIBLE | WS_CHILD | WS_BORDER,
 					 20, 20,
 					 200, 100,
-					 hWnd, (HMENU)24,
+					 hWnd, (HMENU)27,
 					 NULL, NULL);
 		break;
 	case WM_MOUSEMOVE:
 		POINT Mouse;
 		GetCursorPos(&Mouse);
 		ClientToScreen(hWnd, &Mouse);
-		SetDlgItemInt(hWnd, 21, Mouse.x, TRUE);
-		SetDlgItemInt(hWnd, 22, Mouse.y, TRUE);
+		SetDlgItemInt(hWnd, 23, Mouse.x, TRUE);
+		SetDlgItemInt(hWnd, 24, Mouse.y, TRUE);
 	//	OutputDebugStringA("Mouse Detected:\n");
 		break;
     case WM_COMMAND:
@@ -225,23 +270,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
             int wmId = LOWORD(wParam);
             // Parse the menu selections:
             switch (wmId){
-				case 23:
+				case 10:
 				{
-				//	autoClick(&buffer);
+				//	autoClick(&buffer, 1920, 1080, 1, 0);
 					int len = GetWindowTextLength(hWnd_Count) + 1;
-					INT k;
+					INT runCount, runDelay, run ;
+					POINT click;
 					char str[256];
 					BOOL b;
-					k = GetDlgItemInt(hWnd, 20, &b, FALSE);
-					sprintf_s(str, "Read Value: %d ; Sucess: %d\n", k, b);
+					SetDlgItemInt(hWnd, 22, GetSystemMetrics(1), FALSE);
+
+					click.x = GetDlgItemInt(hWnd, 25, NULL, FALSE);
+					click.y = GetDlgItemInt(hWnd, 26, NULL, FALSE);
+					runCount = GetDlgItemInt(hWnd, 20, &b, FALSE);
+					runDelay = GetDlgItemInt(hWnd, 21, NULL, FALSE);
+					autoClick(&buffer, click.x, click.y, runCount, runDelay);
+					sprintf_s(str, "Read Value: %d ; Sucess: %d\n", runCount, b);
 					OutputDebugStringA( str );
-					SetDlgItemInt(hWnd, 21, k, FALSE);
+				//	SetDlgItemInt(hWnd, 21, runCount, FALSE);
 					POINT Mouse;
-					GetCursorPos(&Mouse);
-					ClientToScreen(hWnd, &Mouse);
-					SetDlgItemInt(hWnd, 21, Mouse.x, TRUE);
-					SetDlgItemInt(hWnd, 22, Mouse.y, TRUE);
-					sprintf_s(str, "Mouse Position: %d , %d \n", Mouse.x , Mouse.y);
+					GetPhysicalCursorPos(&Mouse);
+				//	ClientToScreen(hWnd, &Mouse);
+				//	ScreenToClient(hWnd, &Mouse);
+					SetDlgItemInt(hWnd, 23, Mouse.x, TRUE);
+					SetDlgItemInt(hWnd, 24, Mouse.y, TRUE);
+				//	autoClick(&buffer, Mouse.x, Mouse.y, runCount, runDelay);
+				//	sprintf_s(str, "Mouse Position: %d , %d \n", Mouse.x , Mouse.y);
 					OutputDebugStringA(str);
 				//	static char Count[10];
 				//	LONG_PTR Count = 0;
