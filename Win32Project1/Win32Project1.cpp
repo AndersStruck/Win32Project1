@@ -66,9 +66,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // TODO: Place code here.
 	//INPUT buffer;
 	int i = 0;
-	LPPOINT MousePos;
+//	LPPOINT MousePos;
 //	GetCursorPos(MousePos);
-	char str[128];
+//	char str[128];
 	//sprintf_s(str);
 	OutputDebugStringA("Konsol Test\n");
 	
@@ -78,7 +78,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	//	Sleep(100);
 	//}
 	
-
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_WIN32PROJECT1, szWindowClass, MAX_LOADSTRING);
@@ -175,6 +174,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 	static HWND hWnd_TEXT, hWnd_Count, hWnd_Delay;
 	static INPUT buffer;
 	MouseSetup(&buffer);
+/*	POINT Mouse;
+	GetCursorPos(&Mouse);
+	ClientToScreen(hWnd, &Mouse);
+	SetDlgItemInt(hWnd, 21, Mouse.x, TRUE);
+	SetDlgItemInt(hWnd, 22, Mouse.y, TRUE);*/
     switch (message){
 	case WM_CREATE:
 		hWnd_Count = CreateWindow(TEXT("EDIT"), TEXT("7"),
@@ -208,6 +212,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 					 hWnd, (HMENU)24,
 					 NULL, NULL);
 		break;
+	case WM_MOUSEMOVE:
+		POINT Mouse;
+		GetCursorPos(&Mouse);
+		ClientToScreen(hWnd, &Mouse);
+		SetDlgItemInt(hWnd, 21, Mouse.x, TRUE);
+		SetDlgItemInt(hWnd, 22, Mouse.y, TRUE);
+	//	OutputDebugStringA("Mouse Detected:\n");
+		break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -215,7 +227,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
             switch (wmId){
 				case 23:
 				{
-					autoClick(&buffer);
+				//	autoClick(&buffer);
 					int len = GetWindowTextLength(hWnd_Count) + 1;
 					INT k;
 					char str[256];
@@ -223,14 +235,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 					k = GetDlgItemInt(hWnd, 20, &b, FALSE);
 					sprintf_s(str, "Read Value: %d ; Sucess: %d\n", k, b);
 					OutputDebugStringA( str );
+					SetDlgItemInt(hWnd, 21, k, FALSE);
+					POINT Mouse;
+					GetCursorPos(&Mouse);
+					ClientToScreen(hWnd, &Mouse);
+					SetDlgItemInt(hWnd, 21, Mouse.x, TRUE);
+					SetDlgItemInt(hWnd, 22, Mouse.y, TRUE);
+					sprintf_s(str, "Mouse Position: %d , %d \n", Mouse.x , Mouse.y);
+					OutputDebugStringA(str);
 				//	static char Count[10];
-					LONG_PTR Count = 0;
+				//	LONG_PTR Count = 0;
 				//	GetWindowTextA(hWnd_Count, Count, len);
-					Count = GetWindowLong(hWnd_Count, GWL_USERDATA);
-					SetWindowText(hWnd_TEXT, TEXT("Button"));
+				//	Count = GetWindowLong(hWnd_Count, GWL_USERDATA);
+				//	SetWindowText(hWnd_TEXT, TEXT("Button"));
 				//	SetWindowTextA(hWnd_Delay , Count);
 				//	SetWindowLong(hWnd_Delay, GWL_USERDATA, Count);
-					SetWindowLongPtr(hWnd_Count, GWL_USERDATA, (LONG_PTR) 10 );
+				//	SetWindowLongPtr(hWnd_Count, GWL_USERDATA, (LONG_PTR) 10 );
 					break; 
 				}
 				case IDM_ABOUT:
